@@ -1,0 +1,173 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Parse_JSON": {
+                "inputs": {
+                    "content": "@triggerBody()",
+                    "schema": {
+                        "properties": {
+                            "deployment": {
+                                "properties": {
+                                    "app_name": {
+                                        "type": "string"
+                                    },
+                                    "capability": {
+                                        "type": "string"
+                                    },
+                                    "cost_code": {
+                                        "type": "string"
+                                    },
+                                    "deployment_type": {
+                                        "type": "string"
+                                    },
+                                    "environment": {
+                                        "type": "string"
+                                    },
+                                    "web_tier": {
+                                        "properties": {
+                                            "count": {
+                                                "type": "integer"
+                                            },
+                                            "disk_size": {
+                                                "type": "string"
+                                            },
+                                            "image_type": {
+                                                "type": "string"
+                                            },
+                                            "kpmg_goldenimage": {
+                                                "properties": {
+                                                    "image_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "imageuri": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "recommended_instance_type": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "runAfter": {},
+                "type": "ParseJson"
+            },
+            "Queue_a_new_build": {
+                "inputs": {
+                    "body": {
+                        "parameters": "{\"app_name\":\"@{body('Parse_JSON')?['deployment']?['app_name']}\",\"capability\":\"@{body('Parse_JSON')?['deployment']?['capability']}\",\"environment\":\"@{body('Parse_JSON')?['deployment']?['environment']}\"}",
+                        "sourceBranch": "main"
+                    },
+                    "host": {
+                        "connection": {
+                            "referenceName": "visualstudioteamservices_1"
+                        }
+                    },
+                    "method": "post",
+                    "path": "/@{encodeURIComponent('TF-LOGICAPP-ADO-AUTOMATION')}/_apis/build/builds",
+                    "queries": {
+                        "account": "Ranbir-Negi",
+                        "buildDefId": "9"
+                    }
+                },
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "When_a_HTTP_request_is_received": {
+                "inputs": {
+                    "schema": {
+                        "properties": {
+                            "deployment": {
+                                "properties": {
+                                    "app_name": {
+                                        "type": "string"
+                                    },
+                                    "capability": {
+                                        "type": "string"
+                                    },
+                                    "cost_code": {
+                                        "type": "string"
+                                    },
+                                    "deployment_type": {
+                                        "type": "string"
+                                    },
+                                    "environment": {
+                                        "type": "string"
+                                    },
+                                    "web_tier": {
+                                        "properties": {
+                                            "count": {
+                                                "type": "integer"
+                                            },
+                                            "disk_size": {
+                                                "type": "string"
+                                            },
+                                            "image_type": {
+                                                "type": "string"
+                                            },
+                                            "kpmg_goldenimage": {
+                                                "properties": {
+                                                    "image_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "imageuri": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "marketplace_image": {
+                                                "properties": {
+                                                    "offer": {
+                                                        "type": "string"
+                                                    },
+                                                    "publisher": {
+                                                        "type": "string"
+                                                    },
+                                                    "sku": {
+                                                        "type": "string"
+                                                    },
+                                                    "version": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "recommended_instance_type": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    },
+    "kind": "Stateful"
+}
