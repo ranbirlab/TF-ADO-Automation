@@ -1,0 +1,141 @@
+parameters:
+  - name: app_name
+    type: string
+    displayName: 'App Name'
+    default: cch
+  - name: capability
+    type: string
+    displayName: 'Capability'
+    default: tax
+  - name: environment
+    type: string
+    displayName: 'Environment'
+    default: uat
+  - name: web_tier_count
+    type: number
+    displayName: 'Web Tier Count'
+    default: 1
+  - name: web_tier_recommended_instance_type
+    type: string
+    displayName: 'Web Tier Recommended Instance Type'
+    default: Standard_DS2_v2
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  bkstrgrg: 'TF-Backend-RG'
+  bkstrg: 'tfdemobackend'
+  bkcontainer: 'tax-tfstate'
+  bkstrgkey: 'sequence.tfstate:prd'
+
+stages:
+  - stage: tfvalidate
+    jobs:
+      - job: validate
+        continueOnError: false
+        steps:
+          - task: TerraformInstaller@0
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: PowerShell@2
+            inputs:
+              targetType: 'inline'
+              script: |
+                $jsonPath = "$(System.DefaultWorkingDirectory)/data/web_deploy_tax_sequence_dev.json"
+                $jsonContent = Get-Content $jsonPath -Raw | ConvertFrom-Json
+                $jsonContent.deployment.app_name = "$(app_name)"
+                $jsonContent.deployment.capability = "$(capability)"
+                $jsonContent.deployment.environment = "$(environment)"
+                $jsonContent.deployment.web_tier.count = "$(web_tier_count)"
+                $jsonContent.deployment.web_tier.recommended_instance_type = "$(web_tier_recommended_instance_type)"
+                $jsonContent.deployment.web_tier.disk_size = "$(web_tier_disk_size)"
+                $jsonContent.deployment.web_tier.image_type = "$(web_tier_image_type)"
+                $jsonContent.deployment.web_tier.kpmg_goldenimage.image_name = "$(web_tier_kpmg_goldenimage_image_name)"
+                $jsonContent.deployment.web_tier.marketplace_image.offer = "$(web_tier_marketplace_image_offer)"
+                $jsonContent.deployment.web_tier.marketplace_image.publisher = "$(web_tier_marketplace_image_publisher)"
+                $jsonContent.deployment.web_tier.marketplace_image.sku = "$(web_tier_marketplace_image_sku)"
+                $jsonContent.deployment.web_tier.kpmg_goldenimage.imageuri = "$(web_tier_kpmg_goldenimage_imageuri)"
+                $jsonContent.deployment.web_tier.marketplace_image.version = "$(web_tier_marketplace_image_version)"
+                $updatedJsonContent = $jsonContent | ConvertTo-Json -Depth 10
+                Set-Content $jsonPath $updatedJsonContent
+            
+          - task: TerraformTaskV3@3
+            displayName: 'Initialize Terraform'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'ADODEVSPN'
+              backendAzureRmResourceGroupName: '$(bkstrgrg)'
+              backendAzureRmStorageAccountName: '$(bkstrg)'
+              backendAzureRmContainerName: '$(bkcontainer)'
+              backendAzureRmKey: '$(bkstrgkey)'
+          
+          - task: TerraformTaskV3@3
+            displayName: 'Validate Terraform'
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              
+  - stage: tfdeploy
+    condition: succeeded('tfvalidate')
+    dependsOn: tfvalidate
+    jobs:
+      - job: apply
+        steps:
+          - task: TerraformInstaller@0
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: PowerShell@2
+            inputs:
+              targetType: 'inline'
+              script: |
+                $jsonPath = "$(System.DefaultWorkingDirectory)/data/web_deploy_tax_sequence_dev.json"
+                $jsonContent = Get-Content $jsonPath -Raw | ConvertFrom-Json
+                $jsonContent.deployment.app_name = "$(app_name)"
+                $jsonContent.deployment.capability = "$(capability)"
+                $jsonContent.deployment.environment = "$(environment)"
+                $jsonContent.deployment.web_tier.count = "$(web_tier_count)"
+                $jsonContent.deployment.web_tier.recommended_instance_type = "$(web_tier_recommended_instance_type)"
+                $jsonContent.deployment.web_tier.disk_size = "$(web_tier_disk_size)"
+                $jsonContent.deployment.web_tier.image_type = "$(web_tier_image_type)"
+                $jsonContent.deployment.web_tier.kpmg_goldenimage.image_name = "$(web_tier_kpmg_goldenimage_image_name)"
+                $jsonContent.deployment.web_tier.marketplace_image.offer = "$(web_tier_marketplace_image_offer)"
+                $jsonContent.deployment.web_tier.marketplace_image.publisher = "$(web_tier_marketplace_image_publisher)"
+                $jsonContent.deployment.web_tier.marketplace_image.sku = "$(web_tier_marketplace_image_sku)"
+                $jsonContent.deployment.web_tier.kpmg_goldenimage.imageuri = "$(web_tier_kpmg_goldenimage_imageuri)"
+                $jsonContent.deployment.web_tier.marketplace_image.version = "$(web_tier_marketplace_image_version)"
+                $updatedJsonContent = $jsonContent | ConvertTo-Json -Depth 10
+                Set-Content $jsonPath $updatedJsonContent
+
+          - task: TerraformTaskV3@3
+            displayName: 'Initialize Terraform'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'ADODEVSPN'
+              backendAzureRmResourceGroupName: '$(bkstrgrg)'
+              backendAzureRmStorageAccountName: '$(bkstrg)'
+              backendAzureRmContainerName: '$(bkcontainer)'
+              backendAzureRmKey: '$(bkstrgkey)'
+
+          - task: TerraformTaskV3@3
+            displayName: 'Plan Terraform'
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              environmentServiceNameAzureRM: 'ADODEVSPN'
+
+          - task: TerraformTaskV3@3
+            displayName: 'Apply Terraform'
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              environmentServiceNameAzureRM: 'ADODEVSPN'
