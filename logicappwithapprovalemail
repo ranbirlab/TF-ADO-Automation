@@ -1,0 +1,274 @@
+{
+    "connections": {
+        "functionConnections": {
+            "azureFunctionOperation": {
+                "authentication": {
+                    "name": "Code",
+                    "type": "QueryString",
+                    "value": "@appsetting('azureFunctionOperation_functionAppKey')"
+                },
+                "displayName": "jsonconvertor",
+                "function": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/resourceGroups/NetworkWatcherRG/providers/Microsoft.Web/sites/testfunctionappranbir/functions/HttpTrigger1"
+                },
+                "triggerUrl": "https://testfunctionappranbir.azurewebsites.net/api/httptrigger1"
+            }
+        },
+        "managedApiConnections": {
+            "office365": {
+                "api": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/providers/Microsoft.Web/locations/eastus/managedApis/office365"
+                },
+                "authentication": {
+                    "type": "ManagedServiceIdentity"
+                },
+                "connection": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/resourceGroups/TAX-DEV-NETWORK-RG/providers/Microsoft.Web/connections/office365"
+                },
+                "connectionRuntimeUrl": "https://0e952e631540b60a.07.common.logic-eastus.azure-apihub.net/apim/office365/0931adc501204d43b3c6404a114e5fc3"
+            },
+            "visualstudioteamservices": {
+                "api": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/providers/Microsoft.Web/locations/eastus/managedApis/visualstudioteamservices"
+                },
+                "authentication": {
+                    "type": "ManagedServiceIdentity"
+                },
+                "connection": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/resourceGroups/TAX-DEV-NETWORK-RG/providers/Microsoft.Web/connections/visualstudioteamservices"
+                },
+                "connectionRuntimeUrl": "https://0e952e631540b60a.07.common.logic-eastus.azure-apihub.net/apim/visualstudioteamservices/2f62b0ab7c46403da5c177ae2cfe7f6f"
+            },
+            "visualstudioteamservices_1": {
+                "api": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/providers/Microsoft.Web/locations/eastus/managedApis/visualstudioteamservices"
+                },
+                "authentication": {
+                    "type": "ManagedServiceIdentity"
+                },
+                "connection": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/resourceGroups/TAX-DEV-NETWORK-RG/providers/Microsoft.Web/connections/visualstudioteamservices-9"
+                },
+                "connectionRuntimeUrl": "https://0e952e631540b60a.07.common.logic-eastus.azure-apihub.net/apim/visualstudioteamservices/423702506deb44c2a9e737d4f3b85613"
+            },
+            "visualstudioteamservices_2": {
+                "api": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/providers/Microsoft.Web/locations/eastus/managedApis/visualstudioteamservices"
+                },
+                "authentication": {
+                    "type": "ManagedServiceIdentity"
+                },
+                "connection": {
+                    "id": "/subscriptions/291d580d-af84-4966-834b-e3082071922d/resourceGroups/TAX-DEV-NETWORK-RG/providers/Microsoft.Web/connections/visualstudioteamservices-2"
+                },
+                "connectionRuntimeUrl": "https://0e952e631540b60a.07.common.logic-eastus.azure-apihub.net/apim/visualstudioteamservices/46a5726ce3014b8f835b4fdfee1cd979"
+            }
+        }
+    },
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Parse_JSON": {
+                "inputs": {
+                    "content": "@triggerBody()",
+                    "schema": {
+                        "properties": {
+                            "deployment": {
+                                "properties": {
+                                    "app_name": {
+                                        "type": "string"
+                                    },
+                                    "capability": {
+                                        "type": "string"
+                                    },
+                                    "cost_code": {
+                                        "type": "string"
+                                    },
+                                    "deployment_type": {
+                                        "type": "string"
+                                    },
+                                    "environment": {
+                                        "type": "string"
+                                    },
+                                    "web_tier": {
+                                        "properties": {
+                                            "count": {
+                                                "type": "integer"
+                                            },
+                                            "disk_size": {
+                                                "type": "string"
+                                            },
+                                            "image_type": {
+                                                "type": "string"
+                                            },
+                                            "kpmg_goldenimage": {
+                                                "properties": {
+                                                    "image_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "imageuri": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "recommended_instance_type": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "runAfter": {},
+                "type": "ParseJson"
+            },
+            "Queue_a_new_build": {
+                "inputs": {
+                    "body": {
+                        "parameters": "{\"app_name\":\"@{body('Parse_JSON')?['deployment']?['app_name']}\",\"capability\":\"@{body('Parse_JSON')?['deployment']?['capability']}\",\"environment\":\"@{body('Parse_JSON')?['deployment']?['environment']}\",\"cost_code\":\"@{body('Parse_JSON')?['deployment']?['cost_code']}\",\"deployment_type\":\"@{body('Parse_JSON')?['deployment']?['deployment_type']}\",\"web_tier_count\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['count']}\",\"web_tier_recommended_instance_type\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['recommended_instance_type']}\",\"web_tier_disk_size\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['disk_size']}\",\"web_tier_image_type\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['image_type']}\",\"web_tier_kpmg_goldenimage_image_name\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['kpmg_goldenimage']?['image_name']}\",\"web_tier_kpmg_goldenimage_imageuri\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['kpmg_goldenimage']?['imageuri']}\",\"web_tier_marketplace_image_publisher\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['marketplace_image']?['publisher']}\",\"web_tier_marketplace_image_offer\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['marketplace_image']?['offer']}\",\"web_tier_marketplace_image_sku\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['marketplace_image']?['sku']}\",\"web_tier_marketplace_image_version\":\"@{body('Parse_JSON')?['deployment']?['web_tier']?['marketplace_image']?['version']}\"}",
+                        "sourceBranch": "main"
+                    },
+                    "host": {
+                        "connection": {
+                            "referenceName": "visualstudioteamservices_1"
+                        }
+                    },
+                    "method": "post",
+                    "path": "/@{encodeURIComponent('TF-LOGICAPP-ADO-AUTOMATION')}/_apis/build/builds",
+                    "queries": {
+                        "account": "Ranbir-Negi",
+                        "buildDefId": "9"
+                    }
+                },
+                "runAfter": {
+                    "Send_approval_email": [
+                        "Succeeded",
+                        "FAILED"
+                    ]
+                },
+                "type": "ApiConnection"
+            },
+            "Send_approval_email": {
+                "inputs": {
+                    "body": {
+                        "Message": {
+                            "Body": "<table>\n    <tr>\n        <td><strong>Capability:</strong></td>\n        <td>@{triggerBody()?['deployment']?['capability']}</td>\n    </tr>\n    <tr>\n        <td><strong>App Name:</strong></td>\n        <td>@{triggerBody()?['deployment']?['app_name']}</td>\n    </tr>\n    <tr>\n        <td><strong>Environment:</strong></td>\n        <td>@{triggerBody()?['deployment']?['environment']}</td>\n    </tr>\n    <tr>\n        <td><strong>Cost Code:</strong></td>\n        <td>@{triggerBody()?['deployment']?['cost_code']}</td>\n    </tr>\n    <tr>\n        <td><strong>Deployment Type:</strong></td>\n        <td>@{triggerBody()?['deployment']?['deployment_type']}</td>\n    </tr>\n    <tr>\n        <td><strong>Web Tier Count:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['count']}</td>\n    </tr>\n    <tr>\n        <td><strong>Recommended Instance Type:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['recommended_instance_type']}</td>\n    </tr>\n    <tr>\n        <td><strong>Disk Size:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['disk_size']}</td>\n    </tr>\n    <tr>\n        <td><strong>Image Type:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['image_type']}</td>\n    </tr>\n    <tr>\n        <td><strong>Image Name:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['kpmg_goldenimage']?['image_name']}</td>\n    </tr>\n    <tr>\n        <td><strong>Publisher:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['marketplace_image']?['publisher']}</td>\n    </tr>\n    <tr>\n        <td><strong>Offer:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['marketplace_image']?['offer']}</td>\n    </tr>\n    <tr>\n        <td><strong>SKU:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['marketplace_image']?['sku']}</td>\n    </tr>\n    <tr>\n        <td><strong>Version:</strong></td>\n        <td>@{triggerBody()?['deployment']?['web_tier']?['marketplace_image']?['version']}</td>\n    </tr>\n</table>\n",
+                            "HideHTMLMessage": false,
+                            "Importance": "High",
+                            "Options": "Approve, Reject",
+                            "Subject": "New deployment approval requested:@{body('Parse_JSON')?['deployment']?['app_name']}@{body('Parse_JSON')?['deployment']?['capability']}@{body('Parse_JSON')?['deployment']?['environment']}",
+                            "To": "ranbnegi@in.ibm.com",
+                            "UseOnlyHTMLMessage": true
+                        },
+                        "NotificationUrl": "@{listCallbackUrl()}"
+                    },
+                    "host": {
+                        "connection": {
+                            "referenceName": "office365"
+                        }
+                    },
+                    "path": "/approvalmail/$subscriptions"
+                },
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnectionWebhook"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "When_a_HTTP_request_is_received": {
+                "inputs": {
+                    "schema": {
+                        "properties": {
+                            "deployment": {
+                                "properties": {
+                                    "app_name": {
+                                        "type": "string"
+                                    },
+                                    "capability": {
+                                        "type": "string"
+                                    },
+                                    "cost_code": {
+                                        "type": "string"
+                                    },
+                                    "deployment_type": {
+                                        "type": "string"
+                                    },
+                                    "environment": {
+                                        "type": "string"
+                                    },
+                                    "web_tier": {
+                                        "properties": {
+                                            "count": {
+                                                "type": "integer"
+                                            },
+                                            "disk_size": {
+                                                "type": "string"
+                                            },
+                                            "image_type": {
+                                                "type": "string"
+                                            },
+                                            "kpmg_goldenimage": {
+                                                "properties": {
+                                                    "image_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "imageuri": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "marketplace_image": {
+                                                "properties": {
+                                                    "offer": {
+                                                        "type": "string"
+                                                    },
+                                                    "publisher": {
+                                                        "type": "string"
+                                                    },
+                                                    "sku": {
+                                                        "type": "string"
+                                                    },
+                                                    "version": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "recommended_instance_type": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    },
+    "kind": "Stateful",
+    "parameters": {
+        "PATToken": {
+            "type": "String",
+            "value": "frjz2rtauynzz4fwkzeh7bswrbrbab32wzbnhzdnlmvci6r6hnuq"
+        }
+    }
+}
