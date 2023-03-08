@@ -71,7 +71,7 @@ stages:
           steps:
           - task: SendGridEmail@2
             inputs:
-              SendGridApiKey: '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'
+              SendGridApiKey: ''
               FromAddress: 'reach@ranbirlabs.co.in'
               ToAddresses: 'reach@ranbirlabs.co.in'
               Subject: 'Terraform Apply Approval Required'
